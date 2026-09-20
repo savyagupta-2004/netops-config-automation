@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install yamllint
+
+      - name: Lint YAML inventory and host_vars
+        run: yamllint host_vars inventory
+
+      - name: Render all golden configs (dry-run gate)
+        run: |
+          python -c "
+          from netauto.render import render_config
+          from netauto.connections import load_inventory
+          for name in load_inventory():
+              print(f'--- {name} ---')
+              print(render_config(name))
+          "
+
+      - name: Run unit tests
+        run: pytest -v

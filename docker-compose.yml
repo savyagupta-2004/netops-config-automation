@@ -1,0 +1,54 @@
+services:
+  r1:
+    build: ./routers
+    container_name: r1
+    hostname: r1
+    cap_add: [NET_ADMIN, SYS_ADMIN]
+    sysctls:
+      net.ipv4.ip_forward: 1
+      net.ipv4.conf.all.rp_filter: 0
+    networks:
+      mgmt:
+        ipv4_address: 172.30.0.11
+    ports:
+      - "2201:22"
+
+  r2:
+    build: ./routers
+    container_name: r2
+    hostname: r2
+    cap_add: [NET_ADMIN, SYS_ADMIN]
+    sysctls:
+      net.ipv4.ip_forward: 1
+      net.ipv4.conf.all.rp_filter: 0
+    networks:
+      mgmt:
+        ipv4_address: 172.30.0.12
+    ports:
+      - "2202:22"
+
+  r3:
+    build: ./routers
+    container_name: r3
+    hostname: r3
+    cap_add: [NET_ADMIN, SYS_ADMIN]
+    sysctls:
+      net.ipv4.ip_forward: 1
+      net.ipv4.conf.all.rp_filter: 0
+    networks:
+      mgmt:
+        ipv4_address: 172.30.0.13
+    ports:
+      - "2203:22"
+
+networks:
+  mgmt:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+# The r1-r2, r1-r3, r2-r3 point-to-point link networks are intentionally NOT
+# declared here. Compose's per-service multi-network attach order isn't
+# deterministic (see scripts/lab_up.sh), so those networks are created and
+# attached explicitly, in a controlled sequence, by scripts/lab_up.sh.

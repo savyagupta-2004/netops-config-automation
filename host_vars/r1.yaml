@@ -1,0 +1,20 @@
+hostname: r1
+router_id: 10.0.0.1
+loopback_ip: 10.0.0.1
+interfaces:
+  - name: eth1
+    description: "Link to r2"
+    ip: 10.12.0.2
+    prefix_len: 29
+  - name: eth2
+    description: "Link to r3"
+    ip: 10.13.0.2
+    prefix_len: 29
+ospf:
+  networks:
+    - network: 10.0.0.1/32
+      area: 0.0.0.0
+    - network: 10.12.0.0/29
+      area: 0.0.0.0
+    - network: 10.13.0.0/29
+      area: 0.0.0.0

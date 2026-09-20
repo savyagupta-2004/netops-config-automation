@@ -1,0 +1,22 @@
+frr version {{ frr_version | default('8.4') }}
+frr defaults traditional
+hostname {{ hostname }}
+domainname {{ domainname | default('localdomain') }}
+log syslog informational
+no ipv6 forwarding
+!
+{% for iface in interfaces %}
+interface {{ iface.name }}
+ description {{ iface.description }}
+ ip address {{ iface.ip }}/{{ iface.prefix_len }}
+!
+{% endfor %}
+interface lo
+ ip address {{ loopback_ip }}/32
+!
+router ospf
+ ospf router-id {{ router_id }}
+{% for net in ospf.networks %}
+ network {{ net.network }} area {{ net.area }}
+{% endfor %}
+!

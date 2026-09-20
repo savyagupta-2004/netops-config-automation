@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NetOps Config Automation</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background:#0f1115; color:#e6e6e6; margin:0; padding:2rem; }
+  h1 { font-size:1.4rem; margin-bottom:0.25rem; }
+  p.sub { color:#9aa0a6; margin-top:0; margin-bottom:1.5rem; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:1rem; }
+  .card { background:#181b21; border:1px solid #2a2e37; border-radius:10px; padding:1rem 1.2rem; }
+  .card h2 { margin:0 0 0.5rem; font-size:1.05rem; }
+  .badge { display:inline-block; padding:0.15rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600; }
+  .badge.compliant { background:#1f3d2b; color:#5fd888; }
+  .badge.drifted { background:#3d1f1f; color:#ff7a7a; }
+  .badge.unknown { background:#333; color:#aaa; }
+  .row { display:flex; gap:0.5rem; margin-top:0.8rem; flex-wrap:wrap; }
+  button { background:#232833; color:#e6e6e6; border:1px solid #333a46; padding:0.4rem 0.7rem; border-radius:6px; font-size:0.8rem; cursor:pointer; }
+  button:hover { background:#2c3341; }
+  pre { background:#0b0d10; padding:0.7rem; border-radius:6px; overflow:auto; max-height:260px; font-size:0.72rem; white-space:pre-wrap; }
+  .muted { color:#9aa0a6; font-size:0.8rem; }
+</style>
+</head>
+<body>
+  <h1>NetOps Config Automation</h1>
+  <p class="sub">Golden-config compliance &amp; automated deployment for the lab router mesh</p>
+  <div id="grid" class="grid"></div>
+
+<script>
+const API = "http://localhost:8000";
+const grid = document.getElementById("grid");
+
+async function fetchJSON(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error(`${url} -> ${res.status}`);
+  return res.json();
+}
+
+function cardTemplate(device) {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = `
+    <h2>${device.name} <span class="muted">(${device.host})</span></h2>
+    <span class="badge unknown" id="badge-${device.name}">unknown</span>
+    <div class="row">
+      <button data-action="compliance">Check compliance</button>
+      <button data-action="backup">Backup</button>
+      <button data-action="deploy">Deploy golden config</button>
+    </div>
+    <pre id="out-${device.name}" style="display:none;"></pre>
+  `;
+  el.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", () => handleAction(device.name, btn.dataset.action));
+  });
+  return el;
+}
+
+async function handleAction(name, action) {
+  const out = document.getElementById(`out-${name}`);
+  const badge = document.getElementById(`badge-${name}`);
+  out.style.display = "block";
+  out.textContent = "Working...";
+  try {
+    if (action === "compliance") {
+      const report = await fetchJSON(`${API}/devices/${name}/compliance`);
+      badge.className = `badge ${report.compliant ? "compliant" : "drifted"}`;
+      badge.textContent = report.compliant ? "compliant" : "drifted";
+      out.textContent = report.compliant ? "No drift detected." : report.diff.join("\n");
+    } else if (action === "backup") {
+      const res = await fetchJSON(`${API}/devices/${name}/backup`, { method: "POST" });
+      out.textContent = `Backup saved: ${res.backup_path}`;
+    } else if (action === "deploy") {
+      const res = await fetchJSON(`${API}/devices/${name}/deploy`, { method: "POST" });
+      out.textContent = `Deployed.\n${res.result || ""}`;
+    }
+  } catch (err) {
+    out.textContent = `Error: ${err.message}`;
+  }
+}
+
+async function init() {
+  try {
+    const devices = await fetchJSON(`${API}/devices`);
+    devices.forEach((d) => grid.appendChild(cardTemplate(d)));
+  } catch (err) {
+    grid.innerHTML = `<p>Could not reach API at ${API}. Is it running? (${err.message})</p>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
