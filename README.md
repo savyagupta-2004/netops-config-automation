@@ -86,12 +86,7 @@ pytest -v
 ## Credentials
 
 Lab SSH credentials default to `root` / `frrlab123` (see
-`inventory/devices.yaml`) — fine for a throwaway local lab, not something
-you'd ever want in a real inventory file. `netauto/connections.py` will
-prefer `NETAUTO_<DEVICE>_PASSWORD` or `NETAUTO_PASSWORD` environment
-variables over whatever's in the inventory file if they're set, which is
-the pattern you'd use to keep real credentials in CI secrets / a vault
-instead of in git.
+`inventory/devices.yaml`) 
 
 <img width="1917" height="1017" alt="image" src="https://github.com/user-attachments/assets/6e8307f4-c0ca-4b2b-9fa9-185a98674b1e" />
 
