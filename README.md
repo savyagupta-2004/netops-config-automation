@@ -89,4 +89,8 @@ Lab SSH credentials default to `root` / `frrlab123` (see
 `inventory/devices.yaml`) 
 
 <img width="1917" height="1017" alt="image" src="https://github.com/user-attachments/assets/6e8307f4-c0ca-4b2b-9fa9-185a98674b1e" />
+<img width="1450" height="725" alt="image" src="https://github.com/user-attachments/assets/7e3f0205-7df9-4ac9-b171-74f35ad3ccde" />
+<img width="1917" height="1017" alt="image" src="https://github.com/user-attachments/assets/d230a722-f91d-41e7-8a96-95c56c03f876" />
+
+
 
